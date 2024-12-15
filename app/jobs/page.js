@@ -204,7 +204,6 @@ export default function JobTable() {
   );
 }
 
-// Default Column Filter Component
 function DefaultColumnFilter({
   column: { filterValue, setFilter },
 }) {
