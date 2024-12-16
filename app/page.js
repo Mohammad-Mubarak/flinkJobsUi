@@ -37,35 +37,42 @@ const columns = [
     Header: "Flink Job Ids",
     accessor: "jobIds",
     Filter: FlinkJobIdsFilter, // Add filter for Flink Job Ids
-    Cell: ({ value }) => (
-      <div className="flex flex-wrap gap-2">
-        {value.map((jobId) => (
-          <div
-            key={jobId}
-            className="flex items-center space-x-2 bg-blue-200 text-blue-800 px-2 py-1 rounded-full text-xs"
-          >
-            <span>{jobId}</span>
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(jobId);
-                alert(`Copied: ${jobId}`);
-              }}
-              className="text-blue-500 hover:text-blue-700"
+    Cell: ({ value, row }) => {
+      const filterValue = row?.original?.filterValue || ""; // Get the current filter value
+      return (
+        <div className="flex flex-wrap gap-2">
+          {value.map((jobId) => (
+            <div
+              key={jobId}
+              className={`flex items-center space-x-2 px-2 py-1 rounded-full text-xs ${
+                jobId.includes(filterValue) && filterValue
+                  ? "bg-yellow-300 text-black animate-pulse"
+                  : "bg-blue-200 text-blue-800"
+              }`}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4"
-                viewBox="0 0 20 20"
-                fill="currentColor"
+              <span>{jobId}</span>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(jobId);
+                  alert(`Copied: ${jobId}`);
+                }}
+                className="text-blue-500 hover:text-blue-700"
               >
-                <path d="M8 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V6a2 2 0 00-2-2H8z" />
-                <path d="M6 4a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2H8a2 2 0 01-2-2V4z" />
-              </svg>
-            </button>
-          </div>
-        ))}
-      </div>
-    ),
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path d="M8 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V6a2 2 0 00-2-2H8z" />
+                  <path d="M6 4a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2H8a2 2 0 01-2-2V4z" />
+                </svg>
+              </button>
+            </div>
+          ))}
+        </div>
+      );
+    },
   },
   {
     Header: "Parallelism",
@@ -100,7 +107,7 @@ export default function Home() {
     nextPage,
     previousPage,
     setAllFilters, // Used to reset all filters
-    state: { pageIndex },
+    state: { pageIndex, filters }, // Capture filters in state
   } = useTable(
     {
       columns: tableColumns,
@@ -112,6 +119,11 @@ export default function Home() {
     useSortBy,
     usePagination
   );
+
+  // Pass the current filter to each row's original data for `Flink Job Ids`
+  page.forEach((row) => {
+    row.original.filterValue = filters.find((f) => f.id === "jobIds")?.value || "";
+  });
 
   return (
     <div className={darkMode ? "dark" : ""}>
