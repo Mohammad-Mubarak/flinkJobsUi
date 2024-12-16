@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo, useState } from "react";
@@ -10,20 +9,60 @@ const columns = [
   {
     Header: "Test Suite ID",
     accessor: "testSuiteId",
+    Cell: ({ value }) => (
+      <div className="flex items-center space-x-2">
+        <span>{value}</span>
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(value);
+            alert(`Copied: ${value}`);
+          }}
+          className="text-blue-500 hover:text-blue-700"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path d="M8 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V6a2 2 0 00-2-2H8z" />
+            <path d="M6 4a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2H8a2 2 0 01-2-2V4z" />
+          </svg>
+        </button>
+      </div>
+    ),
+    Filter: DefaultColumnFilter,
   },
   {
-    Header: "Fliink Job Ids",
+    Header: "Flink Job Ids",
     accessor: "jobIds",
-    disableFilters: true,
+    Filter: FlinkJobIdsFilter, // Add filter for Flink Job Ids
     Cell: ({ value }) => (
       <div className="flex flex-wrap gap-2">
         {value.map((jobId) => (
-          <span
+          <div
             key={jobId}
-            className="bg-blue-200 text-blue-800 px-2 py-1 rounded-full text-xs"
+            className="flex items-center space-x-2 bg-blue-200 text-blue-800 px-2 py-1 rounded-full text-xs"
           >
-            {jobId}
-          </span>
+            <span>{jobId}</span>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(jobId);
+                alert(`Copied: ${jobId}`);
+              }}
+              className="text-blue-500 hover:text-blue-700"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path d="M8 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V6a2 2 0 00-2-2H8z" />
+                <path d="M6 4a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2H8a2 2 0 01-2-2V4z" />
+              </svg>
+            </button>
+          </div>
         ))}
       </div>
     ),
@@ -31,6 +70,7 @@ const columns = [
   {
     Header: "Parallelism",
     accessor: "parallelism",
+    Filter: DefaultColumnFilter,
   },
 ];
 
@@ -42,12 +82,16 @@ export default function Home() {
   const tableData = useMemo(() => data, []);
   const tableColumns = useMemo(() => columns, []);
 
+  const defaultColumn = useMemo(() => ({
+    Filter: DefaultColumnFilter,
+  }), []);
+
   const {
     getTableProps,
     getTableBodyProps,
     headerGroups,
     prepareRow,
-    page, // Instead of rows, use page for pagination
+    page, // Use page for pagination
     canPreviousPage,
     canNextPage,
     pageOptions,
@@ -55,13 +99,14 @@ export default function Home() {
     gotoPage,
     nextPage,
     previousPage,
-    setAllFilters,
-    state: { pageIndex, pageSize },
+    setAllFilters, // Used to reset all filters
+    state: { pageIndex },
   } = useTable(
     {
       columns: tableColumns,
       data: tableData,
-      initialState: { pageIndex: 0, pageSize: 10 }, 
+      defaultColumn,
+      initialState: { pageIndex: 0, pageSize: 10 },
     },
     useFilters,
     useSortBy,
@@ -79,35 +124,17 @@ export default function Home() {
               onClick={toggleDarkMode}
               className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors duration-200"
             >
-              {darkMode ? (
-                <>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 mr-2"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      d="M10 2a.75.75 0 01.75.75V4a.75.75 0 01-1.5 0V2.75A.75.75 0 0110 2zM4.22 4.22a.75.75 0 011.06 0L6.5 5.44a.75.75 0 11-1.06 1.06L4.22 5.28a.75.75 0 010-1.06zM2 10a.75.75 0 01.75-.75H4a.75.75 0 010 1.5H2.75A.75.75 0 012 10zM4.22 15.78a.75.75 0 011.06-1.06l1.22 1.22a.75.75 0 11-1.06 1.06l-1.22-1.22a.75.75 0 01-1.06 0zM10 17.25a.75.75 0 01.75-.75h1.25a.75.75 0 010 1.5H10.75A.75.75 0 0110 17.25zM15.78 15.78a.75.75 0 010-1.06l1.22-1.22a.75.75 0 011.06 1.06l-1.22 1.22a.75.75 0 01-1.06 0zM17.25 10a.75.75 0 01-.75-.75V8.75a.75.75 0 011.5 0v1.5a.75.75 0 01-.75.75zM15.78 4.22a.75.75 0 010 1.06l1.22 1.22a.75.75 0 011.06-1.06l-1.22-1.22a.75.75 0 011.06 0zM10 5a5 5 0 100 10A5 5 0 0010 5z"
-                    />
-                  </svg>
-                  Light Mode
-                </>
-              ) : (
-                <>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 mr-2"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      d="M10 2a.75.75 0 01.75.75V4a.75.75 0 01-1.5 0V2.75A.75.75 0 0110 2zm4.596 2.354a.75.75 0 011.06.02L10 11.584l-3.71-4.353a.75.75 0 011.14-.976l1.22 1.42a.75.75 0 011.06 0l1.22-1.42a.75.75 0 011.06-.02zM10 16a.75.75 0 01.75-.75h1.25a.75.75 0 010 1.5H10.75A.75.75 0 0110 16zm-4.596-2.354a.75.75 0 011.06-1.06l1.22 1.22a.75.75 0 11-1.06 1.06L5.404 13.646a.75.75 0 010-1.06zM10 5a5 5 0 100 10A5 5 0 0010 5z"
-                    />
-                  </svg>
-                  Dark Mode
-                </>
-              )}
+              {darkMode ? "Light Mode" : "Dark Mode"}
+            </button>
+          </div>
+
+          {/* Reset Filters */}
+          <div className="mb-4">
+            <button
+              onClick={() => setAllFilters([])} // Clear all filters
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors duration-200"
+            >
+              Reset Filters
             </button>
           </div>
 
@@ -132,40 +159,10 @@ export default function Home() {
                       >
                         <div className="flex items-center">
                           {column.render("Header")}
-                          {/* Add a sort direction indicator */}
                           {column.isSorted ? (
-                            column.isSortedDesc ? (
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-4 w-4 ml-1"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M5.23 7.21a.75.75 0 011.06.02L10 11.584l3.71-4.353a.75.75 0 111.14.976l-4.25 5A.75.75 0 0110 14.25a.75.75 0 01-.53-.22l-4.25-5a.75.75 0 01.02-1.06z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                            ) : (
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-4 w-4 ml-1"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M14.77 12.79a.75.75 0 01-1.06-.02L10 8.416 6.29 12.77a.75.75 0 11-1.14-.976l4.25-5a.75.75 0 011.06 0l4.25 5a.75.75 0 01-.02 1.06z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                            )
-                          ) : (
-                            ""
-                          )}
+                            column.isSortedDesc ? " ↓" : " ↑"
+                          ) : ""}
                         </div>
-                        {/* Render the column filter UI */}
                         <div>
                           {column.canFilter ? column.render("Filter") : null}
                         </div>
@@ -173,17 +170,6 @@ export default function Home() {
                     ))}
                   </tr>
                 ))}
-                {/* Reset Filters Button */}
-                <tr>
-                  <th colSpan={columns.length} className="px-4 py-3">
-                    <button
-                      onClick={() => setAllFilters([])}
-                      className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors duration-200"
-                    >
-                      Reset Filters
-                    </button>
-                  </th>
-                </tr>
               </thead>
               <tbody {...getTableBodyProps()} className="text-sm">
                 {page.map((row) => {
@@ -224,44 +210,28 @@ export default function Home() {
               <button
                 onClick={() => gotoPage(0)}
                 disabled={!canPreviousPage}
-                className={`px-3 py-1 rounded ${
-                  !canPreviousPage
-                    ? "bg-gray-300 dark:bg-gray-600 cursor-not-allowed"
-                    : "bg-blue-500 text-white hover:bg-blue-600"
-                } transition-colors duration-200`}
+                className="px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
               >
                 {"<<"}
               </button>
               <button
                 onClick={() => previousPage()}
                 disabled={!canPreviousPage}
-                className={`px-3 py-1 rounded ${
-                  !canPreviousPage
-                    ? "bg-gray-300 dark:bg-gray-600 cursor-not-allowed"
-                    : "bg-blue-500 text-white hover:bg-blue-600"
-                } transition-colors duration-200`}
+                className="px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
               >
                 Previous
               </button>
               <button
                 onClick={() => nextPage()}
                 disabled={!canNextPage}
-                className={`px-3 py-1 rounded ${
-                  !canNextPage
-                    ? "bg-gray-300 dark:bg-gray-600 cursor-not-allowed"
-                    : "bg-blue-500 text-white hover:bg-blue-600"
-                } transition-colors duration-200`}
+                className="px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
               >
                 Next
               </button>
               <button
                 onClick={() => gotoPage(pageCount - 1)}
                 disabled={!canNextPage}
-                className={`px-3 py-1 rounded ${
-                  !canNextPage
-                    ? "bg-gray-300 dark:bg-gray-600 cursor-not-allowed"
-                    : "bg-blue-500 text-white hover:bg-blue-600"
-                } transition-colors duration-200`}
+                className="px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
               >
                 {">>"}
               </button>
@@ -275,26 +245,26 @@ export default function Home() {
 
 // Default Column Filter Component
 function DefaultColumnFilter({
-  column: { filterValue, preFilteredRows, setFilter },
+  column: { filterValue, setFilter },
 }) {
   return (
     <input
       value={filterValue || ""}
-      onChange={(e) => {
-        setFilter(e.target.value || undefined);
-      }}
-      placeholder={`Search...`}
+      onChange={(e) => setFilter(e.target.value || undefined)}
+      placeholder="Search..."
       className="mt-1 block w-full px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
     />
   );
 }
 
-columns.forEach((column) => {
-  if (column.disableFilters) return;
-  column.Filter = DefaultColumnFilter;
-});
-
-
-
-
-
+// Custom Filter for Flink Job Ids
+function FlinkJobIdsFilter({ column: { filterValue, setFilter } }) {
+  return (
+    <input
+      value={filterValue || ""}
+      onChange={(e) => setFilter(e.target.value || undefined)}
+      placeholder="Search Job IDs..."
+      className="mt-1 block w-full px-2 py-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+  );
+}
