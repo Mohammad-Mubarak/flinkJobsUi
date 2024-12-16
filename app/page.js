@@ -4,7 +4,7 @@
 import { useMemo, useState } from "react";
 import { useTable, useFilters, useSortBy, usePagination } from "react-table";
 import "tailwindcss/tailwind.css";
-import { data } from "../../utils/testutils";
+import { data } from "../utils/testutils";
 
 const columns = [
   {
